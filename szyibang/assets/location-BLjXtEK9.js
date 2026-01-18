@@ -1,0 +1,1 @@
+import{a6 as r,r as t}from"./index-Bd4-WGnv.js";const f=r("location",()=>{const e=t(30.27415),o=t(120.15515),a=t("定位中..."),n=t(!1);function u(c,i,s=""){e.value=c,o.value=i,s&&(a.value=s),n.value=!0}return{latitude:e,longitude:o,address:a,isLocated:n,updateLocation:u}});export{f as u};

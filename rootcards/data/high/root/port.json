@@ -1,0 +1,137 @@
+{
+  "prefix": "port",
+  "affixType": "root",
+  "meanings": [
+    {
+      "meaningId": "port_carry",
+      "displayName": "port (运/港)",
+      "themeColor": "#3b82f6",
+      "prefixVisual": "<path d='M2 12 q 5 3 10 0 t 10 0' stroke='currentColor' fill='none'/><rect x='8' y='6' width='8' height='6' fill='currentColor'/>",
+      "prefixIntro": {
+        "title": "词根 -port-",
+        "description": "核心意境是 **“搬运” (Carry)** 或 **“港口” (Port)**。\n港口是货物进出的地方。源于 pore (孔/口)。",
+        "imagery": "联想一艘货船🚢，或者搬运工扛箱子📦。",
+        "visual": "<path d='M2 12 q 5 3 10 0 t 10 0' stroke='currentColor' fill='none'/><rect x='8' y='6' width='8' height='6' fill='currentColor'/>"
+      },
+      "words": [
+        {
+          "word": "port",
+          "rootVisual": "<path d='M2 16 q 5 -3 10 0 t 10 0' stroke='currentColor' fill='none'/><path d='M18 10 v6 M6 10 v6' stroke='currentColor' stroke-width='2'/>",
+          "breakdown": ["port (港口)"],
+          "imagery": "像一个口（pore），船只停泊的地方。",
+          "translation": "港口",
+          "sentences": [
+            {
+              "en": "The ship will arrive in port tomorrow.",
+              "cn": "船将于明天抵达港口。"
+            }
+          ]
+        },
+        {
+          "word": "airport",
+          "rootVisual": "<path d='M2 12 h20' stroke='currentColor' stroke-dasharray='4 2'/><path d='M12 12 l-2 -4 h4 z' fill='currentColor'/>",
+          "breakdown": ["air (空)", "port (港)"],
+          "imagery": "飞机的港口。",
+          "translation": "飞机场",
+          "sentences": [
+            {
+              "en": "I'll meet you at the airport.",
+              "cn": "我会在机场等你。"
+            }
+          ]
+        },
+        {
+          "word": "export",
+          "rootVisual": "<path d='M12 12 l6 0' stroke='currentColor' marker-end='url(#arrow)'/><rect x='6' y='8' width='6' height='8' stroke='currentColor' fill='none'/>",
+          "breakdown": ["ex- (出)", "port (运)"],
+          "imagery": "向外运输，出口。",
+          "translation": "出口",
+          "sentences": [
+            {
+              "en": "The country exports a lot of oil.",
+              "cn": "这个国家出口大量石油。"
+            }
+          ]
+        },
+        {
+          "word": "import",
+          "rootVisual": "<path d='M18 12 l-6 0' stroke='currentColor' marker-end='url(#arrow)'/><rect x='6' y='8' width='6' height='8' stroke='currentColor' fill='none'/>",
+          "breakdown": ["im- (进)", "port (运)"],
+          "imagery": "向内运输，进口。",
+          "translation": "进口",
+          "sentences": [
+            {
+              "en": "We import coffee from Brazil.",
+              "cn": "我们从巴西进口咖啡。"
+            }
+          ]
+        },
+        {
+          "word": "passport",
+          "rootVisual": "<rect x='6' y='6' width='12' height='16' rx='2' stroke='currentColor' fill='none'/><circle cx='12' cy='12' r='3' fill='currentColor'/>",
+          "breakdown": ["pass (通过)", "port (港)"],
+          "imagery": "通过港口的证件。",
+          "translation": "护照",
+          "sentences": [
+            {
+              "en": "You need a passport to travel abroad.",
+              "cn": "出国旅行需要护照。"
+            }
+          ]
+        },
+        {
+          "word": "transport",
+          "rootVisual": "<path d='M2 16 h20' stroke='currentColor'/><rect x='4' y='10' width='8' height='6' fill='currentColor'/><rect x='14' y='10' width='6' height='6' fill='currentColor'/>",
+          "breakdown": ["trans- (跨)", "port (运)"],
+          "imagery": "从一地搬运到另一地。",
+          "translation": "运输",
+          "sentences": [
+            {
+              "en": "Public transport is very convenient in this city.",
+              "cn": "这个城市的公共交通非常便利。"
+            }
+          ]
+        },
+        {
+          "word": "portable",
+          "rootVisual": "<rect x='8' y='8' width='8' height='10' stroke='currentColor' fill='none'/><path d='M8 8 l4 -4 l4 4' stroke='currentColor'/>",
+          "breakdown": ["port (搬)", "-able (能)"],
+          "imagery": "可以搬动的，便携的。",
+          "translation": "可移动的；便携的",
+          "sentences": [
+            {
+              "en": "He has a portable music player.",
+              "cn": "他有一个便携式音乐播放器。"
+            }
+          ]
+        },
+        {
+          "word": "reporter",
+          "rootVisual": "<rect x='6' y='6' width='12' height='14' stroke='currentColor' fill='none'/><path d='M12 6 v-2' stroke='currentColor'/><circle cx='12' cy='2' r='2' fill='currentColor'/>",
+          "breakdown": ["re- (回)", "port (搬)", "-er (人)"],
+          "imagery": "把新闻搬运回来的人。",
+          "translation": "记者",
+          "sentences": [
+            {
+              "en": "She is a reporter for a famous newspaper.",
+              "cn": "她是一家著名报纸的记者。"
+            }
+          ]
+        },
+        {
+          "word": "support",
+          "rootVisual": "<path d='M6 6 h12' stroke='currentColor' stroke-width='2'/><path d='M8 6 v14 M16 6 v14' stroke='currentColor' stroke-width='2'/>",
+          "breakdown": ["sup- (下)", "port (撑/拿)"],
+          "imagery": "在下面撑住/拿住。",
+          "translation": "支持",
+          "sentences": [
+            {
+              "en": "Thank you for your support.",
+              "cn": "谢谢你的支持。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

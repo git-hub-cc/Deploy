@@ -1,0 +1,82 @@
+{
+  "prefix": "Vocab T",
+  "affixType": "topic",
+  "meanings": [
+    {
+      "meaningId": "vocab_t",
+      "displayName": "Vocabulary T",
+      "themeColor": "#84cc16",
+      "prefixIntro": {
+        "title": "T 开头核心词",
+        "description": "高中阶段 T 开头的高频混合词汇。",
+        "imagery": "字母 T 像一棵树（Tree）或支撑物，常含“接触（Touch）、延伸、支撑”之意。"
+      },
+      "words": [
+        {
+          "word": "thank",
+          "rootVisual": "<path d='M12 20 l-2 -2 l-4 0 a 2 2 0 0 1 -2 -2 v -8 a 2 2 0 0 1 2 -2 h 12 a 2 2 0 0 1 2 2 v 8 a 2 2 0 0 1 -2 2 l -4 0 z' stroke='currentColor' fill='none'/><path d='M8 10 l4 4 l4 -4' stroke='currentColor'/>",
+          "breakdown": [
+            "thank",
+            "(感谢)"
+          ],
+          "imagery": "想(think)起别人的好，所以感谢(thank)。i 和 a 通假。",
+          "translation": "感谢",
+          "sentences": [
+            {
+              "en": "Thank you.",
+              "cn": "谢谢你。"
+            }
+          ]
+        },
+        {
+          "word": "think",
+          "rootVisual": "<path d='M12 12 m-8 0 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0' stroke='currentColor' fill='none'/><circle cx='12' cy='12' r='2' fill='currentColor'/><path d='M12 4 v4' stroke='currentColor'/>",
+          "breakdown": [
+            "think",
+            "(想)"
+          ],
+          "imagery": "大脑在运转。",
+          "translation": "想",
+          "sentences": [
+            {
+              "en": "I think so.",
+              "cn": "我是这么想的。"
+            }
+          ]
+        },
+        {
+          "word": "tip",
+          "rootVisual": "<path d='M12 4 L14 10 L10 10 Z' fill='currentColor'/><line x1='12' y1='10' x2='12' y2='20' stroke='currentColor'/>",
+          "breakdown": [
+            "tip",
+            "(尖端)"
+          ],
+          "imagery": "一个尖锐的针头或笔尖。o 和 i 通假。",
+          "translation": "尖端；小费",
+          "sentences": [
+            {
+              "en": "He kissed the tip of her nose.",
+              "cn": "他亲吻了她的鼻尖。"
+            }
+          ]
+        },
+        {
+          "word": "top",
+          "rootVisual": "<path d='M4 20 L12 4 L20 20 H4 Z' stroke='currentColor' fill='none'/><circle cx='12' cy='4' r='2' fill='currentColor'/>",
+          "breakdown": [
+            "top",
+            "(顶端)"
+          ],
+          "imagery": "山峰的最高点。",
+          "translation": "顶端",
+          "sentences": [
+            {
+              "en": "He stood at the top of the hill.",
+              "cn": "他站在山顶上。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

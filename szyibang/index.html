@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/szyibang/favicon.ico">
+    <!-- 禁用缩放，适配移动端 App 体验 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>数智易帮 - 同城应急资源调配平台</title>
+
+    <!-- 高德地图 JS API 安全配置 -->
+    <script type="text/javascript">
+        // 注意：开发环境如果遇到 INVALID_USER_SCODE 错误，
+        // 可能需要去高德控制台获取配套的【安全密钥】填入此处
+        window._AMapSecurityConfig = {
+            securityJsCode: 'b8363a832b5e30fe8ef3bebaf19ac343',
+        }
+    </script>
+    <!-- 高德地图 JS API (已修改：增加 plugin 参数以预加载 Geocoder 等插件) -->
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=93e1c172ccd336ecc9dc8a037a1c890c&plugin=AMap.Geocoder,AMap.Geolocation,AMap.Driving"></script>
+  <script type="module" crossorigin src="/szyibang/assets/index-Bd4-WGnv.js"></script>
+  <link rel="stylesheet" crossorigin href="/szyibang/assets/index-D6t_JIzg.css">
+</head>
+<body>
+<div id="app"></div>
+</body>
+</html>

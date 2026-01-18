@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- PWA 配置 -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <!-- SEO 核心配置区域 -->
+    <title>英语词源意境记忆卡 | Etymology Visualizer</title>
+    <meta name="description" content="PPMC词源意境记忆卡 (Etymology Visualizer) 是一个在线英语单词学习工具。">
+    <meta name="keywords" content="英语单词记忆, 词源法, 词根词缀, 意境记忆, PPMC">
+    <meta name="author" content="cc">
+    <link rel="canonical" href="https://ppmc.club/">
+
+    <!-- CSS 资源引入 -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/card.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/feature-listening.css">
+    <link rel="stylesheet" href="css/feature-typing.css">
+    <link rel="stylesheet" href="css/feature-wordbook.css">
+    <link rel="stylesheet" href="css/feature-undo.css">
+    <link rel="stylesheet" href="css/feature-notifications.css">
+
+    <!-- 网站图标 -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- 全屏启动页 (Splash Screen) -->
+<div id="app-splash-screen" class="app-splash-screen">
+    <div class="splash-content">
+        <div class="splash-logo-wrapper">
+            <img src="favicon.svg" alt="Logo" class="splash-logo">
+            <div class="splash-ripple"></div>
+        </div>
+        <h2 class="splash-title">词源意境记忆</h2>
+        <p class="splash-subtitle">Etymology Visualizer</p>
+
+        <div class="splash-loading-area">
+            <p id="loading-progress-text" class="splash-status-text">正在解析词源数据...</p>
+            <div class="splash-progress-track">
+                <div id="loading-progress-bar" class="splash-progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="splash-quote">
+            <p>“单词不是孤岛，而是积木的组合”</p>
+        </div>
+    </div>
+</div>
+
+<!-- 沉浸模式开关按钮 -->
+<button id="immersive-mode-btn" class="floating-action-btn" title="切换沉浸模式">
+    <span data-icon="expand"></span>
+    <span data-icon="compress"></span>
+</button>
+
+<!-- 顶部导航与过滤器 -->
+<header class="app-header">
+    <h1>
+        <img src="favicon.svg" alt="App Logo" class="header-logo">
+        <div class="header-title-text">
+            词源意境记忆
+            <span class="subtitle">Etymology Visualizer</span>
+        </div>
+    </h1>
+
+    <div class="app-slogan">
+        <p>单词不是孤岛，而是<strong>积木</strong>的组合。</p>
+        <p>
+            <span class="highlight">前缀</span>决定方向与态度，
+            <span class="highlight">词根</span>承载核心灵魂，
+            <span class="highlight">后缀</span>标记词性身份。
+        </p>
+    </div>
+
+    <div class="category-filter-container" id="category-filter-container"></div>
+    <div class="content-type-filter-container" id="content-type-filter-container"></div>
+
+    <div class="filter-container" id="filter-container">
+        <!-- 筛选器按钮将由 JavaScript 动态生成 -->
+
+        <div class="tool-group" id="tool-group">
+            <div class="word-count-container">
+                <div class="count-item" title="当前视图">
+                    <span id="word-count-current" class="count-number">0</span>
+                </div>
+                <div class="count-item" title="已掌握">
+                    <span id="word-count-learned" class="count-number">0</span>
+                </div>
+            </div>
+            <button class="icon-btn" id="typing-mode-btn" title="拼写打字模式 (Typing Mode)">
+                <span data-icon="keyboard"></span>
+            </button>
+
+            <button class="icon-btn" id="listening-mode-btn" title="听力磨耳朵模式 (Listening Mode)">
+                <span data-icon="headphones"></span>
+            </button>
+
+            <!-- AI 语境对话模式入口按钮 -->
+            <button class="icon-btn" id="dialogue-mode-btn" title="AI 语境对话模式 (Dialogue Mode)">
+                <span data-icon="dialogue"></span>
+            </button>
+
+            <button class="icon-btn" id="no-visual-btn" title="开启无图自测模式 (Hide Visuals)">
+                <span data-icon="eye_open"></span>
+                <span data-icon="eye_slash"></span>
+            </button>
+
+            <button class="shuffle-btn icon-btn" id="shuffle-btn" title="随机排序当前卡片">
+                <span data-icon="shuffle"></span>
+            </button>
+
+            <!-- 【核心修改】将页脚的链接移至此处作为图标按钮 -->
+            <a href="./combiner" target="_blank" title="SVG 编辑器">
+                <button class="icon-btn"><span data-icon="edit_svg"></span></button>
+            </a>
+            <button class="icon-btn" id="dsnr-trigger" title="DSNR 音频彩蛋"> <!-- 关键: 迁移 id="dsnr-trigger" 以保证 JS 功能正常 -->
+                <span data-icon="music_note"></span>
+            </button>
+            <a href="https://github.com/git-hub-cc/RootCards" target="_blank" title="查看 GitHub 仓库">
+                <button class="icon-btn"><span data-icon="github"></span></button>
+            </a>
+            <!-- 【修改结束】 -->
+
+            <div class="options-menu-container">
+                <button class="icon-btn" id="more-options-btn" title="更多操作">
+                    <span data-icon="more_vertical"></span>
+                </button>
+                <div class="options-dropdown-menu" id="options-menu">
+                    <button class="menu-item" id="show-achievements-btn">
+                        <span data-icon="trophy"></span> 查看成就
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="show-heatmap-btn">
+                        <span data-icon="calendar"></span> 学习轨迹
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="import-learned-btn">
+                        <span data-icon="import"></span> 导入已掌握
+                    </button>
+                    <button class="menu-item" id="export-learned-btn">
+                        <span data-icon="export"></span> 导出已掌握
+                    </button>
+                    <button class="menu-item" id="export-current-btn">
+                        <span data-icon="export_view"></span> 导出当前视图
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="manage-wordbook-btn">
+                        <span data-icon="book_open"></span> 管理单词本
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="clear-learned-btn">
+                        <span data-icon="trash"></span> 清空已掌握
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="theme-toggle-menu-btn">
+                        <span data-icon="moon"></span> 切换主题
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-container" id="search-container">
+                <span data-icon="search"></span>
+                <input type="search" id="search-input" class="search-input" placeholder="搜索 (Search)..." autocomplete="off">
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 主内容区域 -->
+<main class="card-grid" id="card-grid">
+    <div id="skeleton-loader">
+        <div class="skeleton-card"><div class="skeleton-badge"></div><div class="skeleton-visual"></div><div class="skeleton-word"></div><div class="skeleton-hint"></div></div>
+        <div class="skeleton-card"><div class="skeleton-badge"></div><div class="skeleton-visual"></div><div class="skeleton-word"></div><div class="skeleton-hint"></div></div>
+    </div>
+
+    <div id="load-more-trigger" class="load-more-trigger">
+        <span data-icon="spinner"></span>
+    </div>
+</main>
+
+<!-- 移动端底部固定导航栏容器 -->
+<nav id="mobile-bottom-bar" class="mobile-bottom-bar"></nav>
+
+<!-- 模态框与模板区域 -->
+<div id="listening-modal" class="modal-overlay is-hidden">
+    <div class="modal-content listening-content">
+        <button class="modal-close-btn" id="listening-close-btn" title="退出听力模式">
+            <span data-icon="close"></span>
+        </button>
+        <div class="listening-header">
+            <h3 class="listening-mode-title">👂 听力磨耳朵</h3>
+            <div class="listening-toggle-wrapper">
+                <label for="audio-source-toggle" class="listening-label">单词</label>
+                <div class="toggle-switch">
+                    <label for="audio-source-toggle"><input type="checkbox" id="audio-source-toggle" checked><span class="slider"></span></label>
+                </div>
+                <label for="audio-source-toggle" class="listening-label">例句</label>
+            </div>
+        </div>
+        <div class="listening-visual">
+            <div class="audio-waves" id="audio-waves"><span></span><span></span><span></span><span></span><span></span></div>
+            <button id="listening-replay-btn" class="listening-replay-btn" title="重播音频">
+                <span data-icon="play_fill"></span>
+            </button>
+        </div>
+        <div class="listening-answer-area" id="listening-answer-area">
+            <div class="listening-hidden-placeholder">点击下方“揭晓”查看内容</div>
+            <div class="listening-revealed-content is-hidden">
+                <h2 class="listening-word"></h2><div class="listening-meaning"></div><div class="listening-sentence-en"></div><div class="listening-sentence-cn"></div>
+            </div>
+        </div>
+        <div class="listening-controls">
+            <button id="listening-reveal-btn" class="control-btn btn-reveal">👀 揭晓答案</button>
+            <button id="listening-next-btn" class="control-btn btn-next">⏭ 下一个</button>
+        </div>
+    </div>
+</div>
+
+<div id="typing-modal" class="modal-overlay is-hidden">
+    <div class="modal-content typing-content">
+        <div class="typing-header">
+            <span class="typing-progress-text">进度: <span id="typing-progress-current">1</span> / <span id="typing-progress-total">10</span></span>
+            <button class="modal-close-btn" id="typing-close-btn" title="退出打字模式">
+                <span data-icon="close"></span>
+            </button>
+        </div>
+        <div class="typing-prompt">
+            <div class="typing-prompt-controls">
+                <button id="typing-replay-audio-btn" class="icon-btn typing-audio-btn" title="重播发音">
+                    <span data-icon="volume_replay"></span>
+                </button>
+                <button id="typing-hint-btn" class="icon-btn typing-hint-btn" title="获取提示">
+                    <span data-icon="lightbulb"></span>
+                </button>
+            </div>
+            <p class="typing-meaning" id="typing-meaning">Loading...</p>
+            <p class="typing-sentence" id="typing-sentence">Loading sentence...</p>
+        </div>
+        <div class="typing-input-container">
+            <input type="text" id="typing-input" class="typing-input" placeholder="输入单词..." autocomplete="off" spellcheck="false">
+            <div id="typing-feedback-icon" class="typing-feedback-icon"></div>
+        </div>
+        <div id="typing-result-area" class="typing-result-area is-hidden">
+            <p class="correct-answer-label">正确答案:</p>
+            <p class="correct-answer-text" id="typing-correct-answer">WORD</p>
+        </div>
+        <div class="typing-controls">
+            <button id="typing-submit-btn" class="control-btn btn-submit">提交 (Enter)</button>
+            <button id="typing-next-btn" class="control-btn btn-next is-hidden">下一个 (Enter)</button>
+        </div>
+    </div>
+</div>
+
+<div id="wordbook-modal" class="modal-overlay is-hidden">
+    <div class="modal-content wordbook-content">
+        <div id="wordbook-view-list" class="wordbook-view-list">
+            <div class="wordbook-header">
+                <button id="wordbook-new-btn" class="icon-btn" title="新建单词本">
+                    <span data-icon="plus"></span>
+                </button>
+                <h3>📚 我的单词本</h3>
+                <button id="wordbook-close-btn" class="modal-close-btn" title="关闭">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <div id="wordbook-list-container" class="wordbook-list-container">
+                <p class="wordbook-empty-hint">暂无单词本，点击左上方“+”开始创建。</p>
+            </div>
+        </div>
+        <div id="wordbook-view-editor" class="wordbook-view-editor is-hidden">
+            <div class="wordbook-header">
+                <button id="wordbook-back-btn" class="icon-btn" title="返回列表">
+                    <span data-icon="arrow_left"></span>
+                </button>
+                <h3 id="wordbook-editor-title">新建单词本</h3>
+                <div style="width: 38px; height: 38px;"></div>
+            </div>
+            <div class="wordbook-section">
+                <input type="text" id="wordbook-name-input" class="wordbook-name-input" placeholder="输入单词本名称 (e.g., 老友记S1E1)">
+            </div>
+            <div class="wordbook-section extraction-area">
+                <label class="section-label">追加新单词</label>
+                <textarea id="wordbook-text-input" placeholder="粘贴英文文本到此处..."></textarea>
+                <div class="action-row">
+                    <span id="wordbook-extract-status" class="status-text"></span>
+                    <button id="wordbook-extract-btn" class="control-btn btn-reveal btn-compact">
+                        <span data-icon="plus"></span>
+                        提取并追加
+                    </button>
+                </div>
+            </div>
+            <div class="wordbook-section">
+                <div class="list-header">
+                    <label class="section-label">包含的单词 (<span id="wordbook-word-count">0</span>)</label>
+                    <div class="list-actions">
+                        <button id="wordbook-select-all-btn" class="icon-btn-sm" title="全选">
+                            <span data-icon="check_square"></span>
+                        </button>
+                        <button id="wordbook-deselect-all-btn" class="icon-btn-sm" title="全不选">
+                            <span data-icon="square"></span>
+                        </button>
+                        <button id="wordbook-remove-learned-btn" class="icon-btn-sm" title="移除已掌握的单词">
+                            <span data-icon="trash_check"></span>
+                        </button>
+                    </div>
+                </div>
+                <div id="wordbook-words-list" class="wordbook-words-list"></div>
+            </div>
+            <div class="wordbook-footer">
+                <button id="wordbook-save-btn" class="control-btn btn-submit" disabled>保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="achievements-modal" class="modal-overlay is-hidden">
+    <div class="modal-content achievements-content">
+        <div class="achievements-header">
+            <h3>🏆 学习成就 (Achievements)</h3>
+            <button id="achievements-close-btn" class="modal-close-btn" title="关闭">
+                <span data-icon="close"></span>
+            </button>
+        </div>
+        <div id="achievements-list-container" class="achievements-list">
+            <!-- 成就列表将由 JavaScript 动态生成 -->
+        </div>
+    </div>
+</div>
+
+<div id="heatmap-modal" class="modal-overlay is-hidden">
+    <div class="modal-content heatmap-content">
+        <div class="achievements-header">
+            <h3>🔥 学习轨迹 (Learning Heatmap)</h3>
+            <button id="heatmap-close-btn" class="modal-close-btn" title="关闭">
+                <span data-icon="close"></span>
+            </button>
+        </div>
+        <div id="heatmap-container" class="heatmap-container">
+            <!-- 热力图将由 JavaScript 动态生成 -->
+        </div>
+    </div>
+</div>
+
+<div id="dialogue-modal" class="modal-overlay is-hidden">
+    <div class="modal-content dialogue-content">
+        <div class="dialogue-header">
+            <div style="flex: 1;"></div>
+            <div class="dialogue-actions-bar">
+                <button id="dialogue-give-up-btn" class="icon-btn dialogue-action-icon" title="放弃 / 显示答案">
+                    <span data-icon="flag"></span>
+                </button>
+                <button id="dialogue-close-btn" class="modal-close-btn" title="退出对话" style="position: relative; top: 0; right: 0; padding: 0;">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+        </div>
+        <div id="dialogue-history" class="dialogue-history"></div>
+        <div class="dialogue-input-area">
+            <input id="dialogue-input" class="dialogue-text-input" placeholder="尝试用英语描述..." rows="1"></input>
+            <button id="dialogue-send-btn" class="dialogue-send-btn" title="发送">
+                <span data-icon="send"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 卡片模板 -->
+<template id="card-template">
+    <div class="card">
+        <div class="card-inner">
+            <div class="card-front">
+                <div class="prefix-badge"></div>
+                <button class="toggle-prefix-btn" title="切换前缀图像">
+                    <span data-icon="eye_open"></span>
+                    <span data-icon="eye_slash"></span>
+                </button>
+                <button class="mark-btn" title="标记为已掌握">
+                    <span data-icon="check_empty"></span>
+                    <span data-icon="check_filled"></span>
+                </button>
+                <div class="visual-area"></div>
+
+                <div class="word-area">
+                    <h2 class="word-text"></h2>
+                    <div class="word-controls">
+                        <button class="audio-btn word-audio" title="朗读单词">
+                            <span data-icon="volume_word"></span>
+                        </button>
+                        <button class="audio-btn note-btn" title="添加/查看笔记">
+                            <span data-icon="note_empty"></span>
+                            <span data-icon="note_filled"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="hint-text">点击翻转查看解析</p>
+                <div class="card-note-overlay is-hidden">
+                    <textarea class="note-input" placeholder="输入你的联想笔记..."></textarea>
+                    <div class="note-actions">
+                        <button class="note-action-btn btn-cancel">取消</button>
+                        <button class="note-action-btn btn-save">保存</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-back">
+                <div class="breakdown-box"><span class="part-prefix"></span> + <span class="part-root"></span></div>
+                <div class="meaning-section"><h3 class="cn-translation"></h3><p class="imagery-text"></p></div>
+                <div class="sentence-section"></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- 前缀介绍卡片模板 -->
+<template id="prefix-intro-template">
+    <div class="card prefix-intro-card">
+        <div class="card-inner">
+            <div class="card-front">
+                <div class="visual-area"></div><div class="word-area"><h2 class="intro-title"></h2></div><p class="hint-text">点击翻转查看联想记忆</p>
+            </div>
+            <div class="card-back">
+                <div class="intro-section"><h3 class="intro-section-title">核心意境</h3><p class="intro-description"></p></div>
+                <div class="intro-section"><h3 class="intro-section-title">联想记忆</h3><p class="intro-imagery"></p></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- 应用页脚 -->
+<footer class="app-footer">
+    <p>学习资料来源：韩宇极简英语 & AI 辅助生成</p>
+    <!-- 【核心修改】移除了 SVG 编辑、DSNR 和 GitHub 的链接，因为它们已被移至顶部工具栏 -->
+    <p class="footer-meta">© 2024 cc | <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备2024271251号</a></p>
+</footer>
+
+<!-- 撤销操作通知栏 -->
+<div id="undo-toast" class="undo-toast">
+    <span id="undo-message" class="undo-message">操作已完成</span>
+    <button id="undo-action-btn" class="undo-action-btn">撤销</button>
+    <div class="undo-progress-bar-container">
+        <div id="undo-progress-bar" class="undo-progress-bar"></div>
+    </div>
+</div>
+
+<!-- 全局通知栏 -->
+<div id="notification-toast" class="notification-toast">
+    <span id="notification-icon" class="notification-icon"></span>
+    <span id="notification-message" class="notification-message"></span>
+</div>
+
+<!-- 隐藏的文件导入输入框 -->
+<input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+<!-- JavaScript 资源引入 -->
+<script src="lib/compromise.js"></script>
+<script src="js/ui-helpers.js"></script>
+<script src="js/icons.js" type="module"></script>
+<script src="js/config.js" type="module"></script>
+<script src="data/manifest.js"></script>
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>

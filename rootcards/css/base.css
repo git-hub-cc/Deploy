@@ -1,0 +1,162 @@
+/* ==========================================================================
+   Base Styles - 基础与全局样式 (v2.3 - 包含全局滚动条美化)
+   ========================================================================== */
+
+:root {
+    /* 1. 背景色 */
+    --bg-color: #f3f4f6;
+    --bg-secondary-color: #ffffff;
+    --card-bg: #ffffff;
+    --card-back-bg: #fafafa;
+    --card-back-section-bg: #ffffff;
+
+    /* 2. 文本颜色 */
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --text-inverse: #ffffff;
+    --text-highlight: #111827;
+    --text-code: #374151;
+
+    /* 3. 边框与分隔线颜色 */
+    --border-color: #e5e7eb;
+    --border-color-hover: #d1d5db;
+    --border-imagery: #ccc;
+
+    /* 4. 特殊/状态颜色 */
+    --color-learned: #f59e0b;
+    --theme-color-default: #777;
+
+    /* 5. 阴影 */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* 6. 尺寸 */
+    --radius-lg: 16px;
+    --radius-sm: 8px;
+
+    /* 7. 动态主题色 */
+    --theme-color: var(--theme-color-default);
+
+    /* 8. 滚动条配色 (新增) - 使用半透明色以更好地融合 */
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode {
+    --bg-color: #111827;
+    --bg-secondary-color: #1f2937;
+    --card-bg: #1f2937;
+    --card-back-bg: #161e2b;
+    --card-back-section-bg: #1f2937;
+    --text-main: #e5e7eb;
+    --text-sub: #9ca3af;
+    --text-inverse: #ffffff;
+    --text-highlight: #ffffff;
+    --text-code: #d1d5db;
+    --border-color: #374151;
+    --border-color-hover: #4b5563;
+    --border-imagery: #4b5563;
+    --theme-color-default: #374151;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+
+    /* 深色模式下的滚动条配色 (新增) */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* 禁止 iOS/Android 长按选中文本/图片，防止弹出系统菜单干扰 */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    /* 禁止移动端点击高亮 */
+    -webkit-tap-highlight-color: transparent;
+
+    /* Firefox 全局滚动条样式 (新增) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+input, textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+html {
+    scroll-behavior: smooth;
+    /* 默认 PC 端高度 */
+    height: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    width: 100%;
+    min-height: 100%;
+}
+
+/*
+   --- 全局滚动条美化 (Webkit: Chrome, Edge, Safari) ---
+   设计目标：纤细、圆润、不抢占视觉焦点，且能自动适配深色模式
+*/
+
+/* 滚动条整体 */
+::-webkit-scrollbar {
+    width: 6px;   /* 垂直滚动条宽度 */
+    height: 6px;  /* 水平滚动条高度 */
+    background-color: transparent; /* 轨道背景完全透明 */
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 10px; /* 全圆角 */
+    /* 增加边框使得滑块看起来比实际更细，同时保留点击区域 (可选优化) */
+    border: 1px solid transparent;
+    background-clip: content-box;
+}
+
+/* 滚动条滑块 (悬停) */
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+/* 滚动条轨道 (通常保持透明) */
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* 滚动条角落 (横竖滚动条交汇处) */
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+/*
+   【核心修复】移动端真机适配：
+   使用 position: fixed 强制锁定视口，解决 Safari/微信 底部工具栏上浮导致的高度计算错误。
+   这会让网页的表现完全像一个原生 App，不会有整体的橡皮筋回弹效果。
+*/
+@media screen and (max-width: 768px) {
+    html, body {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* 禁止任何层级的 body 滚动 */
+        overscroll-behavior: none; /* 禁止下拉刷新等浏览器行为 */
+
+        /* 启用 iOS 硬件加速，防止闪烁 */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+}

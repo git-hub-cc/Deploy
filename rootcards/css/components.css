@@ -1,0 +1,635 @@
+/* ==========================================================================
+   Component Styles - 通用组件样式 (v6.5 - 统一双状态图标切换逻辑)
+   --------------------------------------------------------------------------
+   主要变更:
+   - 为 #no-visual-btn 添加纯 CSS 图标切换逻辑，不再依赖 JS。
+   - 确保其行为与卡片上的切换按钮一致。
+   ========================================================================== */
+
+/* --- 核心辅助类 --- */
+.is-hidden {
+    display: none !important;
+}
+
+/* --- 组件: 全屏启动页 (Splash Screen) --- */
+.app-splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.app-splash-screen.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 2rem;
+    max-width: 400px;
+}
+
+.splash-logo-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+}
+
+.splash-logo {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    animation: splash-logo-pop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.splash-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-color: var(--theme-color-default);
+    opacity: 0.2;
+    border-radius: 50%;
+    z-index: 1;
+    animation: splash-ripple-effect 2s infinite ease-out;
+}
+
+.splash-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-highlight);
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out 0.3s forwards;
+}
+
+.splash-subtitle {
+    font-size: 1rem;
+    color: var(--text-sub);
+    font-weight: 500;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out 0.5s forwards;
+}
+
+.splash-loading-area {
+    width: 100%;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out 0.8s forwards;
+}
+
+.splash-status-text {
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    margin-bottom: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.splash-progress-track {
+    width: 100%;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.splash-progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--theme-color-default);
+    border-radius: 2px;
+    transition: width 0.3s linear;
+    background-image: linear-gradient(
+            90deg,
+            rgba(255,255,255,0) 0,
+            rgba(255,255,255,0.4) 50%,
+            rgba(255,255,255,0) 100%
+    );
+    background-size: 50px 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 1.5s infinite linear;
+}
+
+.splash-quote {
+    position: absolute;
+    bottom: 3rem;
+    font-size: 0.9rem;
+    color: var(--text-sub);
+    font-style: italic;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 1.5s forwards;
+}
+
+@keyframes splash-logo-pop {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes splash-ripple-effect {
+    0% { width: 80%; height: 80%; opacity: 0.4; }
+    100% { width: 200%; height: 200%; opacity: 0; }
+}
+@keyframes shimmer {
+    0% { background-position: -50px 0; }
+    100% { background-position: 200px 0; }
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* --- 组件: 类别筛选器按钮 (原 grade-filter-btn) --- */
+.category-filter-btn {
+    padding: 10px 24px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary-color);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    color: var(--text-sub);
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-transform: capitalize; /* 自动将 middle, high 等首字母大写 */
+}
+.category-filter-btn:hover {
+    border-color: var(--border-color-hover);
+    color: var(--text-main);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.category-filter-btn.active {
+    background: var(--theme-color-default);
+    color: var(--text-inverse);
+    border-color: var(--theme-color-default);
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+body.dark-mode .category-filter-btn.active {
+    background-color: #4b5563;
+    border-color: #4b5563;
+}
+/* 对特定类别（如 CET-4）禁用首字母大写，以保持原样 */
+.category-filter-btn[data-category="CET-4"],
+.category-filter-btn[data-category="CET-6"] {
+    text-transform: none;
+}
+
+
+/* --- 组件: 内容类型与子类别筛选器 --- */
+.filter-btn {
+    padding: 8px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    background: var(--bg-secondary-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    color: var(--text-sub);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.filter-btn.active {
+    background: var(--theme-color-default);
+    color: var(--text-inverse);
+    border-color: var(--theme-color-default);
+}
+.filter-btn[data-filter="learned"].active {
+    background: var(--color-learned);
+    border-color: var(--color-learned);
+}
+.filter-btn[data-filter-type="user-wordbook"].active {
+    background: #0891b2;
+    border-color: #0891b2;
+}
+body.dark-mode .filter-btn[data-filter-type="user-wordbook"].active {
+    background: #0e7490;
+    border-color: #0e7490;
+}
+.filter-btn:not(.active):hover {
+    border-color: var(--border-color-hover);
+    color: var(--text-main);
+}
+
+
+/* --- 组件: 工具栏图标按钮 (通用 / PC端) --- */
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--bg-secondary-color);
+    cursor: pointer;
+    color: var(--text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.icon-btn:hover {
+    border-color: var(--border-color-hover);
+    color: var(--text-main);
+    background: var(--bg-color);
+    transform: translateY(-1px);
+}
+.icon-btn:active {
+    transform: translateY(1px);
+}
+.icon-btn svg {
+    width: 38px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+.icon-btn.active {
+    background-color: var(--theme-color);
+    border-color: var(--theme-color);
+    color: var(--text-inverse);
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+}
+.shuffle-btn:active svg {
+    transform: rotate(45deg);
+}
+
+/* --- 【核心修改】统一双状态图标切换逻辑 --- */
+/* 默认状态下，显示 "open" 图标，隐藏 "slash" 图标 */
+#no-visual-btn .icon-eye-open { display: block; }
+#no-visual-btn .icon-eye-slash { display: none; }
+/* 当按钮具有 .active 类时，反转显示状态 */
+#no-visual-btn.active .icon-eye-open { display: none; }
+#no-visual-btn.active .icon-eye-slash { display: block; }
+
+
+/* --- 组件: 沉浸模式悬浮按钮 (Floating Action Button) --- */
+.floating-action-btn { display: none; }
+/* 统一双状态图标切换逻辑 */
+.floating-action-btn .icon-expand { display: block; }
+.floating-action-btn .icon-compress { display: none; }
+body.mode-immersive .floating-action-btn .icon-expand { display: none; }
+body.mode-immersive .floating-action-btn .icon-compress { display: block; }
+
+
+@media screen and (max-width: 768px) {
+    .floating-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0.2rem;
+        right: 0.2rem;
+        z-index: 1100;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .floating-action-btn:active {
+        transform: scale(0.95);
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+    .floating-action-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+    body.dark-mode .floating-action-btn {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+}
+
+
+/* --- 组件: 移动端底部固定导航栏 (Mobile Bottom Bar) --- */
+.mobile-bottom-bar { display: none; }
+
+@media screen and (max-width: 768px) {
+    .mobile-bottom-bar {
+        display: flex;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: calc(60px + env(safe-area-inset-bottom));
+        background-color: var(--bg-secondary-color);
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    body.mode-immersive .mobile-bottom-bar {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-top-color: transparent;
+        box-shadow: none;
+    }
+    body.dark-mode.mode-immersive .mobile-bottom-bar {
+        background-color: rgba(31, 41, 55, 0.85);
+    }
+    .mobile-bottom-bar .icon-btn,
+    .mobile-bottom-bar .options-menu-container {
+        flex: 1;
+        width: 0;
+        min-width: 0;
+        height: 100%;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+    }
+    .mobile-bottom-bar .options-menu-container .icon-btn {
+        width: 100%;
+        height: 100%;
+        flex: 1;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
+    .mobile-bottom-bar .icon-btn:hover,
+    .mobile-bottom-bar .icon-btn:active {
+        transform: none;
+        background-color: rgba(0,0,0,0.03);
+    }
+    body.dark-mode .mobile-bottom-bar .icon-btn:hover {
+        background-color: rgba(255,255,255,0.05);
+    }
+    .mobile-bottom-bar .icon-btn svg {
+        width: 24px;
+        height: 24px;
+        color: var(--text-sub);
+    }
+    .mobile-bottom-bar .icon-btn.active svg {
+        color: var(--theme-color);
+    }
+    .mobile-bottom-bar .options-menu-container .options-dropdown-menu {
+        bottom: 100%;
+        top: auto;
+        right: 0;
+        transform-origin: bottom right;
+        margin-bottom: 0;
+        width: 180px;
+    }
+}
+
+
+/* --- 组件: 加载/空状态提示 --- */
+.loading-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-sub);
+    width: 100%;
+    margin-top: 2rem;
+}
+
+/* --- 组件: 加载动画 Spinner --- */
+.spinner {
+    animation: rotate 2s linear infinite;
+    width: 40px;
+    height: 40px;
+}
+.spinner .path {
+    stroke: var(--text-sub);
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+@keyframes rotate { 100% { transform: rotate(360deg); } }
+@keyframes dash {
+    0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+
+
+/* --- 组件: 更多操作下拉菜单 --- */
+.options-menu-container {
+    position: relative;
+    display: flex;
+}
+.options-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 200px;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hover);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0;
+    z-index: 100;
+    list-style: none;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    pointer-events: none;
+    transform-origin: top right;
+}
+.options-dropdown-menu.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.menu-item:hover {
+    background-color: var(--bg-color);
+}
+.menu-item svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: currentColor;
+}
+.menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 0;
+}
+
+
+/* --- 全局状态与动画 --- */
+.card-grid.is-shuffling .card {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+body.mode-no-visual .card-front .visual-area svg {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+body.mode-no-visual .card-front .visual-area {
+    position: relative;
+}
+body.mode-no-visual .card-front .visual-area::after {
+    content: "?";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5rem;
+    font-weight: 800;
+    color: var(--border-color);
+    opacity: 0.5;
+    font-family: 'Courier New', monospace;
+    pointer-events: none;
+}
+
+
+/* --- 通用美化: 滚动条 --- */
+.sentence-section::-webkit-scrollbar {
+    width: 6px;
+}
+.sentence-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sentence-section::-webkit-scrollbar-thumb {
+    background-color: var(--border-color-hover);
+    border-radius: 10px;
+}
+.sentence-section::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-sub);
+}
+
+/* ==========================================================================
+   学习热力图组件 (Heatmap) - GitHub 风格 (Grid布局重构)
+   ========================================================================== */
+
+.heatmap-container {
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column;
+    gap: 3px;
+    justify-content: start;
+    overflow-x: auto;
+    padding: 0.5rem;
+}
+
+.heatmap-day {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: var(--border-color);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.heatmap-day.is-spacer {
+    background-color: transparent;
+    pointer-events: none;
+}
+
+.heatmap-day:not(.is-spacer):hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.heatmap-day[data-level="1"] { background-color: #9be9a8; }
+.heatmap-day[data-level="2"] { background-color: #40c463; }
+.heatmap-day[data-level="3"] { background-color: #30a14e; }
+.heatmap-day[data-level="4"] { background-color: #216e39; }
+
+body.dark-mode .heatmap-day { background-color: #2d333b; }
+body.dark-mode .heatmap-day[data-level="1"] { background-color: #0e4429; }
+body.dark-mode .heatmap-day[data-level="2"] { background-color: #006d32; }
+body.dark-mode .heatmap-day[data-level="3"] { background-color: #26a641; }
+body.dark-mode .heatmap-day[data-level="4"] { background-color: #39d353; }
+
+.heatmap-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    transform: translate(-50%, -110%);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 2001;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.4;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.heatmap-tooltip.is-visible {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+}
+
+.heatmap-tooltip-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-left: 2px;
+    font-weight: normal;
+}
+
+.heatmap-tooltip-date {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 2px;
+    margin-bottom: 4px;
+}
+
+@media screen and (max-width: 768px) {
+    .heatmap-day {
+        width: 14px;
+        height: 14px;
+    }
+    .heatmap-container {
+        gap: 4px;
+    }
+}
