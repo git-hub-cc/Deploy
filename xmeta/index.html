@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
+    <!-- 网站图标 -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -111,10 +113,19 @@
         </div>
 
         <div class="flex items-center gap-2 px-2 border-l border-slate-700 ml-2">
+            <!-- 原有的自动刷新开关 -->
             <label class="inline-flex items-center cursor-pointer group">
                 <input type="checkbox" id="autoRefreshToggle" class="sr-only peer">
                 <div class="relative w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                 <span class="ms-2 text-[10px] font-mono font-medium text-slate-400 group-hover:text-white transition-colors">AUTO (1m)</span>
+            </label>
+
+            <!-- 新增: 紧凑模式开关 (Compact View) -->
+            <div class="w-px h-4 bg-slate-700 mx-2"></div>
+            <label class="inline-flex items-center cursor-pointer group" title="Toggle Equal Interval X-Axis">
+                <input type="checkbox" id="compactViewToggle" class="sr-only peer">
+                <div class="relative w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+                <span class="ms-2 text-[10px] font-mono font-medium text-slate-400 group-hover:text-white transition-colors">COMPACT</span>
             </label>
         </div>
 
@@ -134,11 +145,6 @@
 <div id="progressContainer" class="absolute top-[63px] left-0 w-full z-40 transition-transform duration-300 -translate-y-full">
     <div class="h-0.5 w-full bg-slate-800 overflow-hidden">
         <div id="progressBar" class="h-full bg-gradient-to-r from-primary to-cyan-400 shadow-[0_0_10px_rgba(59,130,246,0.8)] transition-all duration-200 ease-out" style="width: 0%"></div>
-    </div>
-    <div class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur border border-primary/30 px-4 py-1 rounded-full text-[10px] font-bold text-primary flex items-center gap-2 shadow-lg">
-        <span class="animate-spin material-symbols-outlined text-xs">sync</span>
-        <span id="progressLabel">Initializing...</span>
-        <span id="progressPercent" class="font-mono text-white">0%</span>
     </div>
 </div>
 

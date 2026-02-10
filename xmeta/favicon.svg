@@ -1,0 +1,28 @@
+<svg width='64' height='64' viewBox='0 0 64 64' fill='none' xmlns='http://www.w3.org/2000/svg'>
+    <style>
+        /* 保持与您提供的模板完全一致的样式定义 */
+        .bg { fill: url(#logo-gradient); }
+        .grad-stop-1 { stop-color: #007ACC; }
+        .grad-stop-2 { stop-color: #009688; }
+        .bubble { fill: white; fill-opacity: 0.9; }
+        .dot-1 { fill: #007ACC; }
+        .dot-2 { fill: #009688; }
+
+        @media (prefers-color-scheme: dark) {
+        .bg { fill: transparent; }
+        .grad-stop-1, .grad-stop-2 { stop-color: transparent; }
+        .bubble { fill: #D1D5DB; fill-opacity: 1; }
+        .dot-1, .dot-2 { fill: #4B5563; }
+        }
+    </style>
+
+    <defs>
+        <linearGradient id='logo-gradient' x1='0' y1='0' x2='64' y2='64' gradientUnits='userSpaceOnUse'>
+            <stop class='grad-stop-1'/>
+            <stop offset='1' class='grad-stop-2'/>
+        </linearGradient>
+    </defs>
+
+    <rect width='64' height='64' rx='12' class='bg'/>
+    <path d='M 19 42 H 19 L 27.5858 32.5858 C 28.3668 31.8047 29.6332 31.8047 30.4142 32.5858 L 34 36.1716 L 42.5858 27.5858 L 40 25 C 39.4477 25 39 24.5523 39 24 C 39 23.4477 39.4477 23 40 23 H 47 C 47.5523 23 48 23.4477 48 24 V 31 C 48 31.5523 47.5523 32 47 32 C 46.4477 32 46 31.5523 46 31 V 28.4142 L 36.4142 38 C 36 40 35 40 33 40 L 29 36 L 21 43 Z' class='bubble'/>
+</svg>

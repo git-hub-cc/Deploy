@@ -1,7 +1,6 @@
 /**
  * script.js
- * 修复版：解决进度条卡在 100% 不消失的问题，并增强图表渲染稳定性
- * 新增功能：自动每分钟刷新逻辑
+ * 更新版：新增“紧凑模式”开关 (Equal Interval / Category Axis)
  */
 
 const CONFIG = {
@@ -9,17 +8,24 @@ const CONFIG = {
     hotUrl: "https://api.x-metash.cn/h5/market/marketArchivePage",
     interval: 800,
     pageSize: 500,
-    autoRefreshSeconds: 60 // 自动刷新间隔 (秒)
+    autoRefreshSeconds: 60
 };
 
 let myChart = null;
 let isProcessing = false;
 let currentArchiveId = null;
 
-// 自动刷新相关变量
+// 状态管理
 let isAutoRefresh = false;
+let isCompactMode = false; // 新增：是否开启紧凑模式
 let countdownTimer = null;
 let secondsLeft = CONFIG.autoRefreshSeconds;
+
+// 数据缓存，用于切换视图时无需重新请求
+let cachedData = {
+    bids: null, // Aggregated Bids
+    asks: null  // Aggregated Asks
+};
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -37,11 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 绑定开始按钮事件
     const btn = document.getElementById('startBtn');
     if(btn) btn.onclick = () => {
-        // 如果点击按钮时正在自动倒计时，重置并立即开始
         if (isAutoRefresh && !isProcessing) {
             secondsLeft = 0;
-            updateAutoBtnState(); // UI会显示 0s，然后触发 startProcess
-            // 由于倒计时是在 interval 中触发的，手动点击需要手动清除并触发
+            updateAutoBtnState();
             stopCountdown();
             startProcess();
         } else {
@@ -55,12 +59,22 @@ document.addEventListener('DOMContentLoaded', () => {
         autoToggle.addEventListener('change', (e) => {
             isAutoRefresh = e.target.checked;
             if (isAutoRefresh) {
-                // 开启时，如果没有在处理，立即开始一轮
                 if (!isProcessing) startProcess();
             } else {
-                // 关闭时，清除定时器，恢复按钮状态
                 stopCountdown();
                 resetBtnState();
+            }
+        });
+    }
+
+    // 新增：绑定紧凑模式开关事件
+    const compactToggle = document.getElementById('compactViewToggle');
+    if (compactToggle) {
+        compactToggle.addEventListener('change', (e) => {
+            isCompactMode = e.target.checked;
+            // 如果有缓存数据，直接重绘
+            if (cachedData.bids || cachedData.asks) {
+                renderChart(cachedData.bids, cachedData.asks);
             }
         });
     }
@@ -69,14 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Auto Refresh Logic (新增逻辑)
+// Auto Refresh Logic
 // ==========================================
 
 function startCountdown() {
-    stopCountdown(); // 清除可能存在的旧定时器
+    stopCountdown();
     secondsLeft = CONFIG.autoRefreshSeconds;
-
-    // 立即更新一次UI
     updateAutoBtnState();
 
     countdownTimer = setInterval(() => {
@@ -85,7 +97,7 @@ function startCountdown() {
 
         if (secondsLeft <= 0) {
             stopCountdown();
-            startProcess(); // 倒计时结束，触发采集
+            startProcess();
         }
     }, 1000);
 }
@@ -102,12 +114,10 @@ function updateAutoBtnState() {
     const btn = document.getElementById('startBtn');
     if (!btnText || !btn) return;
 
-    // 如果正在处理中，不要覆盖 "Scanning..." 状态
     if (isProcessing) return;
 
     if (isAutoRefresh) {
         btnText.innerText = `Next: ${secondsLeft}s`;
-        // 视觉降级，表示等待中
         btn.classList.add('bg-slate-700', 'text-slate-300');
         btn.classList.remove('bg-primary', 'text-white');
     } else {
@@ -144,13 +154,10 @@ function showProgress(show) {
     if (!el) return;
 
     if (show) {
-        // 显示
         el.style.transform = 'translateY(0)';
         el.style.opacity = '1';
     } else {
-        // 隐藏
         el.style.transform = 'translateY(-100%)';
-        // 延迟降低透明度，保证动画平滑
         setTimeout(() => {
             if (!isProcessing) el.style.opacity = '0';
         }, 300);
@@ -228,7 +235,6 @@ function selectHotItem(id, element) {
     element.classList.add('hot-item-active', 'border-primary/30', 'bg-primary/10');
     document.getElementById('archiveIdInput').value = id;
 
-    // 如果是自动模式，点击切换物品后立即开始新的一轮
     startProcess(id);
 }
 
@@ -256,7 +262,6 @@ async function fetchPage(archiveId, goodsType, page) {
 async function startProcess(manualId) {
     if (isProcessing) return;
 
-    // 停止倒计时（防止处理时间过长导致定时器重叠）
     stopCountdown();
 
     const archiveId = manualId || document.getElementById('archiveIdInput').value.trim();
@@ -267,9 +272,8 @@ async function startProcess(manualId) {
     const startBtn = document.getElementById('startBtn');
     const btnText = document.getElementById('btnText');
 
-    // 设置按钮为加载状态
     startBtn.disabled = true;
-    startBtn.classList.remove('bg-slate-700', 'text-slate-300'); // 确保移除倒计时样式
+    startBtn.classList.remove('bg-slate-700', 'text-slate-300');
     startBtn.classList.add('bg-primary', 'text-white', 'opacity-80', 'cursor-wait');
 
     const btnIcon = startBtn.querySelector('.material-symbols-outlined');
@@ -279,10 +283,11 @@ async function startProcess(manualId) {
     }
     if(btnText) btnText.innerText = "Scanning...";
 
-    showProgress(true); // 显示进度条
+    showProgress(true);
     toggleEmptyState(false);
 
-    if(myChart) myChart.clear();
+    // 注意：不再此处 clear chart，允许重绘时覆盖，体验更好
+    // if(myChart) myChart.clear();
 
     const totalPages = parseInt(document.getElementById('pageCountInput').value) || 3;
     let rawBids = [], rawAsks = [];
@@ -302,13 +307,11 @@ async function startProcess(manualId) {
     };
 
     try {
-        // Fetch Asks (Sell Orders)
         for (let i = 1; i <= totalPages; i++) {
             updateProgress(`Fetching Sells P${i}`);
             rawAsks = rawAsks.concat(await fetchPage(archiveId, 6, i));
             await sleep(CONFIG.interval);
         }
-        // Fetch Bids (Buy Orders)
         for (let i = 1; i <= totalPages; i++) {
             updateProgress(`Fetching Buys P${i}`);
             rawBids = rawBids.concat(await fetchPage(archiveId, 4, i));
@@ -317,32 +320,26 @@ async function startProcess(manualId) {
 
         if(progressLabel) progressLabel.innerText = "Rendering...";
 
-        // 渲染 (即使数据为空也尝试渲染以清空界面)
         processAndRender(rawBids, rawAsks);
 
     } catch (e) {
         console.error("Task Failed:", e);
         toggleEmptyState(true);
-        // 如果是自动模式出错，不要alert阻断流程，只记录日志
         if(!isAutoRefresh) alert("采集出错，请查看控制台");
     } finally {
         isProcessing = false;
         startBtn.disabled = false;
         startBtn.classList.remove('opacity-80', 'cursor-wait');
 
-        // 恢复按钮图标
         const btnIcon = startBtn.querySelector('.material-symbols-outlined');
         if(btnIcon) {
             btnIcon.classList.remove('animate-spin');
             btnIcon.innerText = 'play_arrow';
         }
 
-        // 强制隐藏进度条
         showProgress(false);
-
         document.getElementById('statusText').innerText = `UPDATED: ${new Date().toLocaleTimeString()}`;
 
-        // [关键] 如果开启了自动刷新，在任务结束后开始倒计时
         if (isAutoRefresh) {
             startCountdown();
         } else {
@@ -361,21 +358,26 @@ function aggregateData(list, isBid) {
     list.forEach(item => {
         let price, vol;
         if (isBid) {
-            // 买单逻辑：某些平台返回的总价，需要除以数量
             const t = parseFloat(item.goodsPrice), c = parseFloat(item.goodsWantBuyCount);
             if (!isNaN(t) && !isNaN(c) && c > 0) { price = t/c; vol = c; }
         } else {
-            // 卖单逻辑：单价
             const p = parseFloat(item.goodsPrice);
             if (!isNaN(p)) { price = p; vol = 1; }
         }
         if (price !== undefined) {
             const key = price.toFixed(2);
-            if (!map[key]) map[key] = { price: parseFloat(key), count: 0 };
+            if (!map[key]) map[key] = { price: parseFloat(key), count: 0, nos: [] };
             map[key].count += vol;
+            if (item.goodsNo) map[key].nos.push(item.goodsNo);
         }
     });
-    const res = Object.values(map).map(o => ({ p: o.price, c: o.count, t: o.price*o.count }));
+
+    const res = Object.values(map).map(o => ({
+        p: o.price,
+        c: o.count,
+        t: o.price*o.count,
+        memo: o.nos.filter(n => n).slice(0, 3).join(', ')
+    }));
     return res.sort((a,b) => b.p - a.p);
 }
 
@@ -387,26 +389,42 @@ function renderTable(id, data, colorClass) {
         return;
     }
     const viewData = data.slice(0, 100);
-    el.innerHTML = viewData.map((item) => `
-        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors group">
+
+    el.innerHTML = viewData.map((item) => {
+        const volDisplay = item.t >= 1000 ? (item.t / 1000).toFixed(1) + 'k' : Math.round(item.t);
+        return `
+        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors group cursor-help" title="${item.memo ? '编号: ' + item.memo : ''}">
             <td class="px-3 py-1.5 font-bold ${colorClass}">${item.p.toFixed(2)}</td>
             <td class="px-3 py-1.5 text-right font-medium text-slate-300">${item.c}</td>
-            <td class="px-3 py-1.5 text-right text-slate-500 text-[10px] group-hover:text-slate-400">${(item.t/1000).toFixed(1)}k</td>
+            <td class="px-3 py-1.5 text-right text-slate-500 text-[10px] group-hover:text-slate-400">${volDisplay}</td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function processAndRender(rawBids, rawAsks) {
     try {
         const bidsAgg = aggregateData(rawBids, true);
         const asksAgg = aggregateData(rawAsks, false);
+
+        // 1. 计算图表用的升序数据 (Low -> High)
         const asksAsc = [...asksAgg].sort((a,b) => a.p - b.p);
 
-        renderTable('bidsTableBody', bidsAgg, 'text-bid-green');
-        renderTable('asksTableBody', asksAsc, 'text-ask-red');
+        // 2. 计算列表用的降序数据 (High -> Low)，以匹配 HTML 标签并实现"中间汇聚"
+        const asksDesc = [...asksAsc].reverse();
 
+        // 缓存处理后的数据 (保持图表数据逻辑)
+        cachedData.bids = bidsAgg;
+        cachedData.asks = asksAsc;
+
+        // 3. 渲染表格
+        renderTable('bidsTableBody', bidsAgg, 'text-bid-green');
+        // 【关键修改】这里使用降序数据 asksDesc，而不是 asksAsc
+        renderTable('asksTableBody', asksDesc, 'text-ask-red');
+
+        // 4. 计算统计数据
         const maxBid = bidsAgg.length ? bidsAgg[0].p : 0;
-        const minAsk = asksAsc.length ? asksAsc[0].p : 0;
+        const minAsk = asksAsc.length ? asksAsc[0].p : 0; // 最低卖价仍然取升序数组的第一个
         const spread = (maxBid && minAsk) ? (minAsk - maxBid).toFixed(2) : '--';
 
         document.getElementById('statBidMax').innerText = maxBid ? maxBid.toFixed(2) : '--';
@@ -423,6 +441,16 @@ function processAndRender(rawBids, rawAsks) {
 
         renderChart(bidsAgg, asksAsc);
 
+        // 【关键修改】渲染完成后，将 SELLS 列表滚动条置底
+        // 使用 setTimeout 确保 DOM 渲染更新完毕后执行滚动
+        setTimeout(() => {
+            const asksContainer = document.getElementById('asksContainer');
+            if (asksContainer) {
+                // 滚动到 scrollHeight (最大高度)，即最底部
+                asksContainer.scrollTop = asksContainer.scrollHeight;
+            }
+        }, 10);
+
     } catch (err) {
         console.error("Render logic error:", err);
     }
@@ -436,32 +464,111 @@ function getSmartAxisRange(prices) {
     return { min: (min-padding).toFixed(2), max: (max+padding).toFixed(2) };
 }
 
+// 核心渲染函数修改：支持 Compact Mode
 function renderChart(bidsDesc, asksAsc) {
     if (!myChart) return;
+    myChart.clear(); // 清除之前的状态
 
-    // 如果没有任何数据，清空图表并显示空状态
     if ((!bidsDesc || bidsDesc.length === 0) && (!asksAsc || asksAsc.length === 0)) {
-        myChart.clear();
         toggleEmptyState(true);
         return;
     }
     toggleEmptyState(false);
 
-    let asksData = [], accAsk = 0;
-    if (asksAsc) asksAsc.forEach(i => { accAsk += i.c; asksData.push([i.p, accAsk]); });
+    // 1. 准备数据：计算累积量
+    // Asks: Low -> High (升序)
+    let asksDataPoints = [], accAsk = 0;
+    const askPrices = []; // 用于 Category 轴
+    if (asksAsc) {
+        asksAsc.forEach(i => {
+            accAsk += i.c;
+            asksDataPoints.push([i.p, accAsk]); // Value轴用 [Price, Vol]
+            askPrices.push(i.p.toFixed(2));     // Category轴用 String
+        });
+    }
 
-    let bidsData = [], accBid = 0;
-    if (bidsDesc) bidsDesc.forEach(i => { accBid += i.c; bidsData.push([i.p, accBid]); });
-    // ECharts 要求数据按 X 轴数值递增排序
-    bidsData.sort((a,b) => a[0] - b[0]);
+    // Bids: High -> Low (降序)
+    let bidsDataPoints = [], accBid = 0;
+    const bidPrices = []; // 用于 Category 轴
+    if (bidsDesc) {
+        bidsDesc.forEach(i => {
+            accBid += i.c;
+            bidsDataPoints.push([i.p, accBid]);
+            bidPrices.push(i.p.toFixed(2));
+        });
+    }
 
-    const askPrices = asksAsc ? asksAsc.map(i => i.p) : [];
-    const bidPrices = bidsDesc ? bidsDesc.map(i => i.p) : [];
-    const askRange = getSmartAxisRange(askPrices);
-    const bidRange = getSmartAxisRange(bidPrices);
+    // 2. 根据模式配置 X 轴
+    const askRawPrices = asksAsc ? asksAsc.map(i => i.p) : [];
+    const bidRawPrices = bidsDesc ? bidsDesc.map(i => i.p) : [];
+    const askRange = getSmartAxisRange(askRawPrices);
+    const bidRange = getSmartAxisRange(bidRawPrices);
 
+    let xAxisConfig0 = {}; // Asks (左侧图表)
+    let xAxisConfig1 = {}; // Bids (右侧图表)
+    let seriesDataAsks = [];
+    let seriesDataBids = [];
+
+    if (isCompactMode) {
+        // --- 紧凑模式 (Category) ---
+        // 忽略数值差，等间距排列
+
+        // Asks (左图): 数据是 Low->High [10, 11, 12]
+        // 我们希望中间(右侧)是低价，外侧(左侧)是高价
+        // inverse: true -> Index 0 (10) 在右侧。 Correct.
+        xAxisConfig0 = {
+            type: 'category',
+            data: askPrices,
+            boundaryGap: false,
+            inverse: true,
+            axisLabel: { color: '#ff4d4f' }
+        };
+        // 类目轴只需要 Y 值数组
+        seriesDataAsks = asksDataPoints.map(d => d[1]);
+
+        // Bids (右图): 数据是 High->Low [9, 8, 7]
+        // 目标: 左边高(9) -> 右边低(7)
+        // inverse: false -> Index 0 (9) 在左侧。 Correct.
+        xAxisConfig1 = {
+            type: 'category',
+            data: bidPrices,
+            boundaryGap: false,
+            inverse: false, // <--- 修改处：改为 false，保持从左(高)到右(低)的顺序
+            axisLabel: { color: '#00d2aa' }
+        };
+        seriesDataBids = bidsDataPoints.map(d => d[1]);
+
+    } else {
+        // --- 普通模式 (Value) ---
+        // 按数值比例排列
+
+        // Value 轴需要数据按 X 排序才能正确画线
+        let valBids = [...bidsDataPoints];
+        valBids.sort((a,b) => a[0] - b[0]); // 升序排序以配合 Value 轴逻辑
+
+        xAxisConfig0 = {
+            type: 'value',
+            min: askRange.min, max: askRange.max,
+            inverse: true, // Value轴反转：大值在左，小值在右 (为了配合左图布局)
+            axisLabel: { color: '#ff4d4f' }
+        };
+        seriesDataAsks = asksDataPoints;
+
+        xAxisConfig1 = {
+            type: 'value',
+            min: bidRange.min, max: bidRange.max,
+            inverse: false, // Value轴正常：小值在左，大值在右 -> 咦，这里通常为了中间对齐，右图应该是左大右小?
+            // 修正 Value 模式逻辑：
+            // 右图 (Bids): 希望中间(左侧)是高价，右侧是低价。
+            // Value轴 inverse: true -> max 在左, min 在右。
+            inverse: true,
+            axisLabel: { color: '#00d2aa' }
+        };
+        seriesDataBids = valBids;
+    }
+
+    // 公共配置
     const commonAxis = {
-        type: 'value',
         axisLabel: { fontFamily: 'JetBrains Mono', fontSize: 10 },
         splitLine: { show: false },
         axisLine: { show: false },
@@ -470,7 +577,7 @@ function renderChart(bidsDesc, asksAsc) {
 
     const option = {
         backgroundColor: 'transparent',
-        animationDuration: 800,
+        animationDuration: 500,
         tooltip: {
             trigger: 'axis',
             backgroundColor: 'rgba(15, 23, 42, 0.9)',
@@ -478,32 +585,40 @@ function renderChart(bidsDesc, asksAsc) {
             textStyle: { color: '#e2e8f0', fontSize: 12 },
             formatter: (params) => {
                 if(!params.length) return '';
+                // 获取当前 hover 的价格
                 let p = params[0].axisValue;
+                // Value模式下 axisValue 是数字，Category 模式下是字符串
+                try {
+                    if(typeof p === 'number') p = p.toFixed(2);
+                } catch(e){}
+
                 let html = `<div class="font-bold mb-1 border-b border-white/10 pb-1">Price: ${p}</div>`;
                 params.forEach(item => {
-                    html += `<div style="color:${item.color}">● ${item.seriesName}: <b>${item.value[1]}</b></div>`;
+                    // item.value 在 Category 轴是单数值(Y)，在 Value 轴是 [X, Y]
+                    const val = Array.isArray(item.value) ? item.value[1] : item.value;
+                    html += `<div style="color:${item.color}">● ${item.seriesName}: <b>${val}</b></div>`;
                 });
                 return html;
             }
         },
         grid: [
-            { left: '2%', width: '46%', right: '52%', top: 40, bottom: 20, containLabel: true },
-            { left: '52%', width: '46%', right: '2%', top: 40, bottom: 20, containLabel: true }
+            { left: '2%', width: '46%', right: '52%', top: 40, bottom: 20, containLabel: true }, // Asks
+            { left: '52%', width: '46%', right: '2%', top: 40, bottom: 20, containLabel: true }  // Bids
         ],
         xAxis: [
-            { ...commonAxis, gridIndex: 0, inverse: true, min: askRange.min, max: askRange.max, axisLabel: { color: '#ff4d4f' } },
-            { ...commonAxis, gridIndex: 1, inverse: true, min: bidRange.min, max: bidRange.max, axisLabel: { color: '#00d2aa' } }
+            { ...commonAxis, ...xAxisConfig0, gridIndex: 0 },
+            { ...commonAxis, ...xAxisConfig1, gridIndex: 1 }
         ],
         yAxis: [
-            { ...commonAxis, gridIndex: 0, splitLine: { show: true, lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
-            { ...commonAxis, gridIndex: 1, splitLine: { show: true, lineStyle: { color: 'rgba(255,255,255,0.05)' } } }
+            { ...commonAxis, type: 'value', gridIndex: 0, splitLine: { show: true, lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+            { ...commonAxis, type: 'value', gridIndex: 1, splitLine: { show: true, lineStyle: { color: 'rgba(255,255,255,0.05)' } } }
         ],
         series: [
             {
                 name: 'Ask (Sell)',
                 type: 'line', xAxisIndex: 0, yAxisIndex: 0,
                 step: 'start', showSymbol: false,
-                data: asksData,
+                data: seriesDataAsks,
                 lineStyle: { color: '#ff4d4f', width: 2 },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -515,8 +630,10 @@ function renderChart(bidsDesc, asksAsc) {
             {
                 name: 'Bid (Buy)',
                 type: 'line', xAxisIndex: 1, yAxisIndex: 1,
+                // Bids Step 调整：
+                // 数据是从左(High)到右(Low)绘制，累积量也是对应的
                 step: 'end', showSymbol: false,
-                data: bidsData,
+                data: seriesDataBids,
                 lineStyle: { color: '#00d2aa', width: 2 },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
