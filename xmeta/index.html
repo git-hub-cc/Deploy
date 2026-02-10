@@ -33,13 +33,22 @@
                     backgroundImage: {
                         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                         'glass': 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                    },
+                    cursor: {
+                        // 移除所有自定义的问号光标
+                        'default': 'default',
+                        'pointer': 'pointer',
                     }
                 },
             },
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* 确保全局光标无问号 */
+            cursor: default;
+        }
 
         /* 极简滚动条 */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -47,19 +56,20 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* 选中态光效 */
+        /* 选中态光效 - 移除悬浮时的问号相关样式 */
         .hot-item-active {
             background: rgba(59, 130, 246, 0.15);
             border-left-color: #3b82f6;
             box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.05);
         }
 
-        /* 玻璃拟态通用类 */
+        /* 玻璃拟态通用类 - 移除悬浮问号样式 */
         .glass-panel {
             background: rgba(19, 20, 31, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: default; /* 强制默认光标，移除问号 */
         }
 
         /* 扫描动画线 */
@@ -76,6 +86,21 @@
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { top: 100%; opacity: 0; }
+        }
+
+        /* 全局移除所有元素悬浮时的问号光标 */
+        *:hover {
+            cursor: inherit !important; /* 继承父元素光标，不使用问号 */
+        }
+
+        /* 按钮/可点击元素保留指针光标，移除问号 */
+        button, a, input[type="checkbox"], label[for], .clickable {
+            cursor: pointer !important;
+        }
+
+        /* 输入框保留文本光标 */
+        input, textarea {
+            cursor: text !important;
         }
     </style>
 </head>
