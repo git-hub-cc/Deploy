@@ -1,0 +1,255 @@
+/* =================================
+   通用样式 (General Styles)
+   ================================= */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+/* =================================
+   页眉与页脚 (Header & Footer)
+   ================================= */
+header, footer {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+footer a {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: none;
+}
+
+/* =================================
+   主内容区与全屏样式 (Main Content & Fullscreen)
+   ================================= */
+main {
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+body.fullscreen-active {
+    background-color: #000; /* 全屏时使用深色背景 */
+    padding: 0;
+    overflow: hidden; /* 全屏时隐藏滚动条 */
+}
+
+body.fullscreen-active header,
+body.fullscreen-active footer,
+body.fullscreen-active .tab-nav,
+body.fullscreen-active .training-section > p {
+    display: none; /* 全屏时隐藏非必要元素 */
+}
+
+body.fullscreen-active main {
+    max-width: 100%;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    box-shadow: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =================================
+   标签页系统 (Tabs System)
+   ================================= */
+.tabs-container {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-nav {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    background-color: #fafafa;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    z-index: 10;
+}
+
+.tab-button {
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 0 10px;
+    transition: all 0.3s;
+    outline: none;
+    color: #555;
+}
+
+.tab-button:hover:not(.active) {
+    color: #007bff;
+}
+
+.tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+    flex-grow: 1;
+    padding-top: 10px;
+}
+
+.tab-content.active {
+    display: flex; /* 使用 flex 管理高度 */
+}
+
+/* =================================
+   训练模块通用样式 (Training Module General Styles)
+   ================================= */
+.training-section {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+canvas {
+    border: 2px solid #333;
+    background-color: #fff;
+    display: block;
+    margin: 20px auto;
+    /* 基础尺寸和响应式行为 */
+    width: 800px;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    transition: all 0.3s;
+}
+
+.controls {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px 25px; /* 行间距 列间距 */
+    transition: all 0.3s;
+}
+
+.controls label, .controls input, .controls button, .controls select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    margin: 0;
+}
+
+.controls select {
+    cursor: pointer;
+}
+
+.controls button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    border-color: #28a745;
+}
+
+.controls button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.controls button[id^="stop"],
+#stopExercise {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.controls button[id^="stop"]:hover:not(:disabled),
+#stopExercise:hover:not(:disabled) {
+    background-color: #c82333;
+}
+
+.controls button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* =================================
+   全屏模式下的特定样式 (Specific Styles for Fullscreen Mode)
+   ================================= */
+body.fullscreen-active .training-section {
+    background-color: transparent;
+    justify-content: center;
+    padding: 10px;
+}
+
+body.fullscreen-active canvas {
+    border: none; /* 全屏时无边框，更具沉浸感 */
+    width: auto;
+    /* 填充大部分屏幕高度，同时保持宽高比 */
+    height: 85vh;
+    max-height: 100%;
+}
+
+body.fullscreen-active .controls {
+    position: absolute;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
+    border-radius: 12px;
+    z-index: 1;
+}
+
+body.fullscreen-active .controls label {
+    color: #fff;
+}
+
+
+/* =================================
+   眼保健操特定样式 (Eye Exercises Specific Styles)
+   ================================= */
+.exercise-display {
+    flex-grow: 1; /* 允许容器填充可用空间 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin: 10px 0;
+    min-height: 200px;
+}
+
+#eyeExerciseImage {
+    max-width: 100%;
+    max-height: 50vh; /* 限制图片高度为视口高度的50% */
+    object-fit: contain; /* 保持宽高比，不裁剪 */
+    border-radius: 8px;
+}
